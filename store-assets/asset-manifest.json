@@ -1,0 +1,11 @@
+{
+  "asset": "chrome-web-store-feature-1280x800.png",
+  "source": "chrome-web-store-feature-1280x800.svg",
+  "width": 1280,
+  "height": 800,
+  "colorMode": "RGB",
+  "alpha": false,
+  "purpose": "Chrome Web Store 功能展示截图",
+  "privacy": "仅使用抽象演示界面，不含真实账号、用户名、仓库、提交、Issue、Pull Request 或源码数据",
+  "brandNote": "未使用 GitHub 官方 Logo；使用扩展自有的译字图标"
+}

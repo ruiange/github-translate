@@ -1,0 +1,158 @@
+name: Chrome Web Store
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  package:
+    name: 校验并打包
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.package.outputs.version }}
+      artifact_name: ${{ steps.package.outputs.artifact_name }}
+      zip_name: ${{ steps.package.outputs.zip_name }}
+      zip_sha256: ${{ steps.package.outputs.zip_sha256 }}
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: 校验脚本语法
+        run: |
+          set -euo pipefail
+          node --check dictionary.js
+          node --check content.js
+          node --check popup.js
+          bash -n scripts/package-extension.sh
+          bash -n scripts/publish-chrome-web-store.sh
+
+      - name: 校验版本并生成 ZIP
+        id: package
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          VERSION="$(node -p "require('./manifest.json').version")"
+
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            if [[ "${GITHUB_EVENT_NAME}" == "push" && "${VERSION}" == "1.0.0" ]]; then
+              echo "Chrome Web Store 已人工上传 1.0.0；首次自动发布必须升级到 1.0.1 或更高版本。" >&2
+              exit 1
+            fi
+
+            if [[ ! "${GITHUB_REF_NAME}" =~ ^v[0-9]+(\.[0-9]+){0,3}$ ]]; then
+              echo "发布标签必须使用 v1、v1.2、v1.2.3 或 v1.2.3.4 格式。" >&2
+              exit 1
+            fi
+
+            if [[ "${GITHUB_REF_NAME}" != "v${VERSION}" ]]; then
+              echo "标签 ${GITHUB_REF_NAME} 与 manifest 版本 ${VERSION} 不一致。" >&2
+              exit 1
+            fi
+
+            if ! git merge-base --is-ancestor "${GITHUB_SHA}" origin/main; then
+              echo "发布标签必须指向 main 分支已有的提交。" >&2
+              exit 1
+            fi
+          fi
+
+          ZIP_PATH="$(./scripts/package-extension.sh dist)"
+          ZIP_NAME="$(basename "${ZIP_PATH}")"
+          ARTIFACT_NAME="github-chinese-translator-${VERSION}"
+          ZIP_SHA256="$(sha256sum "${ZIP_PATH}" | awk '{print $1}')"
+
+          echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "zip_name=${ZIP_NAME}" >> "${GITHUB_OUTPUT}"
+          echo "artifact_name=${ARTIFACT_NAME}" >> "${GITHUB_OUTPUT}"
+          echo "zip_sha256=${ZIP_SHA256}" >> "${GITHUB_OUTPUT}"
+
+      - name: 保存安装包
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.package.outputs.artifact_name }}
+          path: dist/${{ steps.package.outputs.zip_name }}
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+
+  publish:
+    name: 上传并提请审核
+    if: github.event_name == 'push' && github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: chrome-web-store
+    concurrency:
+      group: cws-fjggnmaonjomepilcijjkffjfiblnnbn
+      queue: max
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: 检出发布脚本
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: 下载已校验安装包
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ needs.package.outputs.artifact_name }}
+          path: dist
+
+      - name: 检查发布配置
+        env:
+          GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "${GCP_WORKLOAD_IDENTITY_PROVIDER}" ]] || {
+            echo "缺少 GitHub Variable：GCP_WORKLOAD_IDENTITY_PROVIDER" >&2
+            exit 1
+          }
+          [[ -n "${GCP_SERVICE_ACCOUNT}" ]] || {
+            echo "缺少 GitHub Variable：GCP_SERVICE_ACCOUNT" >&2
+            exit 1
+          }
+
+      - name: 核对安装包完整性
+        env:
+          EXPECTED_SHA256: ${{ needs.package.outputs.zip_sha256 }}
+          ZIP_NAME: ${{ needs.package.outputs.zip_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "${EXPECTED_SHA256}  dist/${ZIP_NAME}" | sha256sum --check --strict
+
+      - name: 使用 GitHub OIDC 获取 Google 短期令牌
+        id: auth
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          create_credentials_file: false
+          export_environment_variables: false
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/chromewebstore
+
+      - name: 上传 Chrome Web Store 并提请审核
+        env:
+          CWS_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+          CWS_EXPECTED_VERSION: ${{ needs.package.outputs.version }}
+          CWS_PUBLISHER_ID: 268b5144-1c3e-48ee-9444-91f16f83b62a
+          CWS_EXTENSION_ID: fjggnmaonjomepilcijjkffjfiblnnbn
+        shell: bash
+        run: ./scripts/publish-chrome-web-store.sh "dist/${{ needs.package.outputs.zip_name }}"

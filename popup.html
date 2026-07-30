@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GitHub 中文翻译助手</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="panel">
+      <header class="masthead">
+        <div class="brand">
+          <span class="brand__mark" aria-hidden="true">译</span>
+          <span class="brand__name">
+            <strong>GitHub 中文</strong>
+          </span>
+        </div>
+        <span class="version" id="version">V1.0.0</span>
+      </header>
+
+      <section class="intro" aria-label="扩展说明">
+        <p>使用本地词库翻译 GitHub 固定界面文案。</p>
+      </section>
+
+      <section class="control-card" aria-label="翻译开关">
+        <label class="control-row" for="translation-toggle">
+          <span class="control-row__copy" role="status" aria-live="polite">
+            <span class="control-row__label" id="translation-state">正在读取设置</span>
+            <span class="control-row__hint" id="translation-hint">请稍候</span>
+          </span>
+          <span class="switch">
+            <input
+              id="translation-toggle"
+              type="checkbox"
+              role="switch"
+              aria-label="GitHub 页面翻译"
+              aria-describedby="translation-hint"
+              disabled
+            />
+            <span class="switch__track" aria-hidden="true">
+              <span class="switch__thumb"></span>
+            </span>
+          </span>
+        </label>
+      </section>
+    </main>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

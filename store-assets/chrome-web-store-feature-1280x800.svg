@@ -1,0 +1,197 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800" role="img" aria-labelledby="title desc">
+  <title id="title">GitHub 中文翻译助手功能展示图</title>
+  <desc id="desc">展示使用本地精确词库翻译 GitHub 固定界面文案的非官方浏览器扩展，不包含真实账号、仓库或源码数据。</desc>
+
+  <defs>
+    <pattern id="paper-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#24292f" stroke-opacity=".04"/>
+    </pattern>
+    <pattern id="popup-grid" width="14" height="14" patternUnits="userSpaceOnUse">
+      <path d="M14 0H0V14" fill="none" stroke="#24292f" stroke-opacity=".045"/>
+    </pattern>
+    <filter id="browser-shadow" x="-10%" y="-10%" width="120%" height="135%">
+      <feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#24292f" flood-opacity=".15"/>
+    </filter>
+    <filter id="popup-shadow" x="-20%" y="-20%" width="150%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="15" flood-color="#24292f" flood-opacity=".22"/>
+    </filter>
+    <clipPath id="browser-clip">
+      <rect x="56" y="164" width="1168" height="580" rx="18"/>
+    </clipPath>
+    <style>
+      text { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; fill: #24292f; }
+      .serif { font-family: "Songti SC", "STSong", "Noto Serif CJK SC", serif; }
+      .muted { fill: #57606a; }
+      .tiny { font-size: 10px; }
+      .small { font-size: 12px; }
+      .body { font-size: 13px; }
+      .label { font-size: 14px; font-weight: 600; }
+      .nav { font-size: 12px; }
+      .hairline { stroke: #24292f; stroke-opacity: .13; }
+      .icon { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </defs>
+
+  <rect width="1280" height="800" fill="#f6f8fa"/>
+  <rect width="1280" height="800" fill="url(#paper-grid)"/>
+  <circle cx="1180" cy="50" r="112" fill="#0969da" fill-opacity=".07"/>
+  <circle cx="1180" cy="50" r="76" fill="none" stroke="#0969da" stroke-opacity=".18"/>
+
+  <g transform="translate(60 34)">
+    <rect width="48" height="48" rx="12" fill="#24292f"/>
+    <path d="M33 7v16m-6-10 6-6 6 6" fill="none" stroke="#54aeff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="23" y="37" text-anchor="middle" class="serif" font-size="27" font-weight="700" fill="#fff">译</text>
+    <text x="64" y="17" font-size="11" font-weight="700" letter-spacing="2.1">GITHUB 中文翻译助手</text>
+    <text x="64" y="47" class="serif" font-size="33" font-weight="700">让 GitHub 固定界面，清楚地显示为中文</text>
+  </g>
+
+  <g transform="translate(884 34)">
+    <rect width="312" height="46" rx="23" fill="#fff" stroke="#24292f" stroke-opacity=".16"/>
+    <circle cx="24" cy="23" r="6" fill="#0969da"/>
+    <text x="41" y="19" class="small" font-weight="700">本地词库 · 精确匹配</text>
+    <text x="41" y="34" class="tiny muted">页面内容不会发送到翻译服务</text>
+  </g>
+
+  <g filter="url(#browser-shadow)">
+    <rect x="56" y="164" width="1168" height="580" rx="18" fill="#fff" stroke="#24292f" stroke-opacity=".18"/>
+  </g>
+
+  <g clip-path="url(#browser-clip)">
+    <rect x="56" y="164" width="1168" height="44" fill="#eaeef2"/>
+    <line x1="56" y1="208" x2="1224" y2="208" class="hairline"/>
+    <circle cx="80" cy="186" r="5" fill="#ff766d"/>
+    <circle cx="97" cy="186" r="5" fill="#f3bf4f"/>
+    <circle cx="114" cy="186" r="5" fill="#54c16f"/>
+    <rect x="394" y="174" width="492" height="24" rx="12" fill="#fff" stroke="#24292f" stroke-opacity=".1"/>
+    <circle cx="411" cy="186" r="4" fill="none" stroke="#57606a" stroke-width="1.2"/>
+    <path d="m414 189 3 3" stroke="#57606a" stroke-width="1.2" stroke-linecap="round"/>
+    <text x="426" y="190" class="tiny muted">github.com/example/chinese-interface</text>
+    <rect x="1085" y="175" width="112" height="22" rx="11" fill="#f6f8fa"/>
+    <text x="1141" y="190" text-anchor="middle" class="tiny" font-weight="600">抽象演示界面</text>
+
+    <rect x="56" y="208" width="1168" height="52" fill="#24292f"/>
+    <rect x="76" y="220" width="28" height="28" rx="7" fill="#fff"/>
+    <text x="90" y="241" text-anchor="middle" class="serif" font-size="17" font-weight="700">译</text>
+    <text x="119" y="240" class="small" font-weight="700" fill="#fff">演示工作区</text>
+    <rect x="314" y="219" width="420" height="30" rx="7" fill="#343b43" stroke="#6e7781"/>
+    <circle cx="333" cy="234" r="5" fill="none" stroke="#b1bac4" stroke-width="1.3"/>
+    <path d="m337 238 4 4" stroke="#b1bac4" stroke-width="1.3"/>
+    <text x="351" y="238" class="small" fill="#b1bac4">搜索或跳转到...</text>
+    <text x="962" y="240" class="small" font-weight="600" fill="#fff">议题</text>
+    <text x="1017" y="240" class="small" font-weight="600" fill="#fff">拉取请求</text>
+    <rect x="1100" y="221" width="88" height="27" rx="6" fill="#0969da"/>
+    <text x="1144" y="239" text-anchor="middle" class="tiny" font-weight="700" fill="#fff">翻译已开启</text>
+
+    <rect x="56" y="260" width="1168" height="92" fill="#f6f8fa"/>
+    <text x="79" y="291" class="small muted">示例组织</text>
+    <text x="143" y="291" class="small muted">/</text>
+    <text x="154" y="291" class="body" font-weight="700" fill="#0969da">中文界面演示仓库</text>
+    <rect x="286" y="276" width="38" height="19" rx="9.5" fill="#fff" stroke="#8c959f"/>
+    <text x="305" y="289" text-anchor="middle" font-size="9" class="muted">公开</text>
+    <g class="nav">
+      <text x="79" y="333" font-weight="700">代码</text>
+      <text x="142" y="333">议题</text>
+      <rect x="173" y="319" width="19" height="18" rx="9" fill="#afb8c1" fill-opacity=".35"/>
+      <text x="182.5" y="332" text-anchor="middle" font-size="9">8</text>
+      <text x="218" y="333">拉取请求</text>
+      <rect x="276" y="319" width="19" height="18" rx="9" fill="#afb8c1" fill-opacity=".35"/>
+      <text x="285.5" y="332" text-anchor="middle" font-size="9">3</text>
+      <text x="323" y="333">自动化</text>
+      <text x="389" y="333">项目</text>
+      <text x="439" y="333">安全</text>
+      <text x="489" y="333">洞察</text>
+    </g>
+    <rect x="70" y="347" width="47" height="3" rx="1.5" fill="#fd8c73"/>
+    <line x1="56" y1="352" x2="1224" y2="352" class="hairline"/>
+
+    <rect x="56" y="352" width="1168" height="392" fill="#fff"/>
+    <rect x="78" y="374" width="784" height="48" rx="7" fill="#fff" stroke="#d0d7de"/>
+    <rect x="93" y="386" width="102" height="24" rx="6" fill="#f6f8fa" stroke="#d0d7de"/>
+    <text x="144" y="402" text-anchor="middle" class="tiny" font-weight="700">主分支</text>
+    <text x="216" y="403" class="small muted">前往文件</text>
+    <rect x="741" y="385" width="104" height="26" rx="6" fill="#1f883d"/>
+    <text x="793" y="402" text-anchor="middle" class="tiny" font-weight="700" fill="#fff">代码</text>
+
+    <rect x="78" y="438" width="784" height="204" rx="7" fill="#fff" stroke="#d0d7de"/>
+    <rect x="78" y="438" width="784" height="41" rx="7" fill="#f6f8fa"/>
+    <circle cx="100" cy="458" r="9" fill="#0969da" fill-opacity=".15"/>
+    <text x="100" y="462" text-anchor="middle" font-size="10" font-weight="700" fill="#0969da">译</text>
+    <text x="119" y="462" class="small" font-weight="700">最新提交</text>
+    <text x="790" y="462" text-anchor="end" class="tiny muted">历史记录</text>
+    <line x1="78" y1="479" x2="862" y2="479" class="hairline"/>
+
+    <g class="small">
+      <rect x="96" y="497" width="13" height="11" rx="2" fill="none" stroke="#57606a"/>
+      <path d="M96 500h5l2-2h6" fill="none" stroke="#57606a"/>
+      <text x="122" y="507" fill="#0969da">界面示例</text>
+      <text x="420" y="507" class="muted">展示固定导航和操作文案</text>
+      <text x="833" y="507" text-anchor="end" class="muted">刚刚</text>
+      <line x1="78" y1="522" x2="862" y2="522" class="hairline"/>
+      <rect x="96" y="539" width="12" height="15" rx="1" fill="none" stroke="#57606a"/>
+      <path d="M99 543h6M99 547h6M99 551h4" stroke="#57606a"/>
+      <text x="122" y="551" fill="#0969da">README.md</text>
+      <text x="420" y="551" class="muted">使用说明</text>
+      <text x="833" y="551" text-anchor="end" class="muted">今天</text>
+      <line x1="78" y1="566" x2="862" y2="566" class="hairline"/>
+    </g>
+
+    <text x="96" y="596" class="label">翻译示例</text>
+    <rect x="96" y="608" width="118" height="24" rx="6" fill="#f6f8fa"/>
+    <text x="155" y="624" text-anchor="middle" class="tiny muted">Pull requests</text>
+    <path d="M228 620h25m-5-5 5 5-5 5" fill="none" stroke="#0969da" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="268" y="608" width="92" height="24" rx="6" fill="#ddf4ff"/>
+    <text x="314" y="624" text-anchor="middle" class="tiny" font-weight="700" fill="#0969da">拉取请求</text>
+    <rect x="379" y="608" width="76" height="24" rx="6" fill="#f6f8fa"/>
+    <text x="417" y="624" text-anchor="middle" class="tiny muted">Actions</text>
+    <path d="M469 620h25m-5-5 5 5-5 5" fill="none" stroke="#0969da" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="509" y="608" width="76" height="24" rx="6" fill="#ddf4ff"/>
+    <text x="547" y="624" text-anchor="middle" class="tiny" font-weight="700" fill="#0969da">自动化</text>
+
+    <rect x="884" y="374" width="314" height="194" rx="7" fill="#fff" stroke="#d0d7de"/>
+    <text x="902" y="402" class="label">关于</text>
+    <text x="902" y="427" class="small muted">本地显示替换，不改动仓库数据。</text>
+    <rect x="902" y="448" width="278" height="38" rx="7" fill="#ddf4ff"/>
+    <circle cx="920" cy="467" r="5" fill="#0969da"/>
+    <text x="934" y="471" class="small" font-weight="700" fill="#0550ae">689 条本地精确词条</text>
+    <text x="902" y="513" class="tiny muted">• 跳过源码、评论、Diff 与日志</text>
+    <text x="902" y="536" class="tiny muted">• 支持动态导航和异步内容</text>
+
+    <rect x="884" y="588" width="314" height="98" rx="7" fill="#f6f8fa" stroke="#d0d7de"/>
+    <text x="902" y="614" class="small" font-weight="700">页面处理边界</text>
+    <text x="902" y="638" class="tiny muted">只替换命中词库的固定界面文案</text>
+    <text x="902" y="659" class="tiny muted">不上传页面内容，不调用远程翻译</text>
+
+    <g filter="url(#popup-shadow)">
+      <rect x="858" y="465" width="318" height="226" rx="3" fill="#f6f8fa" stroke="#24292f"/>
+      <rect x="858" y="465" width="318" height="226" rx="3" fill="url(#popup-grid)"/>
+    </g>
+    <g>
+      <rect x="876" y="483" width="31" height="31" rx="8" fill="#24292f"/>
+      <path d="M898 487v12m-5-7 5-5 5 5" fill="none" stroke="#54aeff" stroke-width="2" stroke-linecap="round"/>
+      <text x="891.5" y="507" text-anchor="middle" class="serif" font-size="18" font-weight="700" fill="#fff">译</text>
+      <text x="918" y="503" class="serif" font-size="14" font-weight="700" letter-spacing="1">GitHub 中文</text>
+      <rect x="1116" y="489" width="42" height="18" fill="#f6f8fa" stroke="#24292f" stroke-opacity=".2"/>
+      <text x="1137" y="502" text-anchor="middle" font-size="8" font-weight="700" class="muted">V1.0.0</text>
+      <line x1="876" y1="525" x2="1158" y2="525" stroke="#24292f"/>
+      <text x="878" y="549" class="tiny muted">使用本地词库翻译 GitHub 固定界面文案。</text>
+      <rect x="876" y="566" width="277" height="88" fill="#fff" stroke="#24292f"/>
+      <rect x="880" y="570" width="277" height="88" fill="none" stroke="#24292f" stroke-width="3" transform="translate(3 3)"/>
+      <text x="892" y="599" class="serif" font-size="15" font-weight="700">翻译已开启</text>
+      <text x="892" y="619" class="tiny muted">动态页面会自动继续翻译</text>
+      <rect x="1086" y="592" width="50" height="28" rx="14" fill="#0969da" stroke="#24292f"/>
+      <circle cx="1122" cy="606" r="9" fill="#fff"/>
+      <rect x="876" y="670" width="110" height="4" rx="2" fill="#0969da"/>
+      <text x="1158" y="679" text-anchor="end" class="tiny" font-weight="700" fill="#0550ae">只在浏览器本地处理</text>
+    </g>
+  </g>
+
+  <g transform="translate(70 762)">
+    <circle cx="4" cy="4" r="4" fill="#0969da"/>
+    <text x="18" y="8" class="tiny" font-weight="700" letter-spacing=".6">主动跳过用户内容</text>
+    <line x1="140" y1="4" x2="166" y2="4" stroke="#24292f" stroke-opacity=".18"/>
+    <text x="180" y="8" class="tiny" font-weight="700" letter-spacing=".6">不上传页面数据</text>
+    <line x1="286" y1="4" x2="312" y2="4" stroke="#24292f" stroke-opacity=".18"/>
+    <text x="326" y="8" class="tiny" font-weight="700" letter-spacing=".6">不修改网站业务逻辑</text>
+  </g>
+  <text x="1207" y="770" text-anchor="end" class="tiny muted">非官方浏览器扩展 · UI 示意图</text>
+</svg>

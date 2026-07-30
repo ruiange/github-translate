@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">GitHub 中文翻译助手图标</title>
+  <rect width="128" height="128" rx="28" fill="#24292f"/>
+  <path d="M18 23h92M18 105h92" stroke="#ffffff" stroke-width="3" opacity=".24"/>
+  <path d="M87 19v28m-9-19 9-9 9 9" fill="none" stroke="#54aeff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="87" cy="47" r="5" fill="#54aeff"/>
+  <text x="19" y="91" fill="#ffffff" font-family="Songti SC, STSong, serif" font-size="70" font-weight="700">译</text>
+</svg>

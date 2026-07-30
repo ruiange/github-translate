@@ -1,0 +1,262 @@
+:root {
+  color-scheme: light;
+  --paper: #f6f8fa;
+  --paper-deep: #d8dee4;
+  --ink: #24292f;
+  --muted: #57606a;
+  --line: rgba(36, 41, 47, 0.18);
+  --signal: #0969da;
+  --white: #ffffff;
+  font-family: "PingFang SC", "Hiragino Sans GB", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-width: 368px;
+  min-height: 236px;
+}
+
+body {
+  color: var(--ink);
+  background:
+    linear-gradient(rgba(36, 41, 47, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(36, 41, 47, 0.035) 1px, transparent 1px),
+    var(--paper);
+  background-size: 18px 18px;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.panel {
+  position: relative;
+  width: 368px;
+  min-height: 236px;
+  padding: 18px;
+  overflow: hidden;
+}
+
+.panel::before {
+  position: absolute;
+  top: 73px;
+  right: -42px;
+  width: 118px;
+  height: 118px;
+  border: 1px solid rgba(36, 41, 47, 0.12);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 14px rgba(9, 105, 218, 0.04),
+    0 0 0 28px rgba(9, 105, 218, 0.025);
+  content: "";
+  pointer-events: none;
+}
+
+.masthead,
+.brand,
+.control-row {
+  display: flex;
+  align-items: center;
+}
+
+.masthead {
+  position: relative;
+  z-index: 1;
+  justify-content: space-between;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--ink);
+}
+
+.brand {
+  gap: 10px;
+}
+
+.brand__mark {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  color: var(--white);
+  border-radius: 9px 9px 9px 3px;
+  background: var(--ink);
+  box-shadow: inset 0 -3px 0 var(--signal);
+  font-family: "Songti SC", "STSong", serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.brand__name strong {
+  font-family: "Songti SC", "STSong", serif;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+}
+
+.version {
+  padding: 4px 7px 3px;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  font-family: "Avenir Next Condensed", "DIN Condensed", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.intro {
+  padding: 21px 2px 17px;
+}
+
+.intro p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.control-card {
+  position: relative;
+  border: 1px solid var(--ink);
+  background: var(--white);
+  box-shadow: 5px 5px 0 var(--ink);
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.control-card:hover {
+  transform: translate(-1px, -1px);
+}
+
+.control-card:has(input:disabled):hover {
+  transform: none;
+}
+
+.control-row {
+  justify-content: space-between;
+  min-height: 74px;
+  padding: 14px 15px;
+  cursor: pointer;
+}
+
+.control-row:has(input:disabled) {
+  cursor: wait;
+}
+
+.control-row__copy {
+  display: grid;
+  gap: 4px;
+}
+
+.control-row__label {
+  font-family: "Songti SC", "STSong", serif;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.control-row__hint {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.switch {
+  position: relative;
+  display: inline-grid;
+  flex: 0 0 auto;
+}
+
+.switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.switch__track {
+  position: relative;
+  display: block;
+  width: 52px;
+  height: 29px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper-deep);
+  transition: background-color 180ms ease;
+}
+
+.switch__thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: var(--ink);
+  transition:
+    transform 220ms cubic-bezier(0.2, 0.9, 0.2, 1.2),
+    background-color 180ms ease;
+}
+
+.switch input:checked + .switch__track {
+  background: var(--signal);
+}
+
+.switch input:checked + .switch__track .switch__thumb {
+  background: var(--white);
+  transform: translateX(23px);
+}
+
+.switch input:focus-visible + .switch__track {
+  outline: 3px solid var(--signal);
+  outline-offset: 3px;
+}
+
+.switch input:disabled + .switch__track {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+body[data-ready="true"] .masthead,
+body[data-ready="true"] .intro,
+body[data-ready="true"] .control-card {
+  animation: enter 420ms both cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+body[data-ready="true"] .intro {
+  animation-delay: 45ms;
+}
+
+body[data-ready="true"] .control-card {
+  animation-delay: 90ms;
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
