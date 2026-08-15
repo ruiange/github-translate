@@ -26,7 +26,7 @@
 
 仓库包含 GitHub Actions 自动发布流程：推送 `main` 时只进行静态语法检查、生成 Chrome 安装包并保存为 Actions Artifact；只有推送与 `manifest.version` 完全一致的 `v*` 标签时，才会通过 Google Workload Identity Federation 获取短期令牌，上传 Chrome Web Store、提交审核，并在审核通过后自动发布。
 
-首次配置 Google OIDC、Chrome Web Store 服务账号和 GitHub Environment 的完整步骤见 [`docs/github-auto-publish.md`](docs/github-auto-publish.md)。当前 `1.0.0` 已经人工上传，不能再用自动流程重复上传；第一次自动更新应使用 `1.0.1` / `v1.0.1`。
+首次配置 Google OIDC、Chrome Web Store 服务账号和 GitHub Environment 的完整步骤见 [`docs/github-auto-publish.md`](docs/github-auto-publish.md)。初始版本 `1.0.0` 由开发者后台人工上传；自动发布从 `1.0.1` / `v1.0.1` 开始。
 
 ## 维护词库
 

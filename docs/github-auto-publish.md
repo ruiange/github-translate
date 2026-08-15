@@ -12,35 +12,35 @@
 ```text
 Publisher ID: 268b5144-1c3e-48ee-9444-91f16f83b62a
 Extension ID: fjggnmaonjomepilcijjkffjfiblnnbn
-GitHub Repository ID: <GITHUB_REPOSITORY_ID>
+GitHub Repository ID: 1316859450
 GitHub Repository: ruiange/github-translate
 ```
 
-计划复用及待完成的云端配置：
+目标云端配置：
 
 ```text
 Google Cloud Project ID: bustling-art-240708
 Google Cloud Project Number: 850818650389
 Service Account: github-cws-publisher@bustling-art-240708.iam.gserviceaccount.com
 Workload Identity Provider: projects/850818650389/locations/global/workloadIdentityPools/github-actions/providers/github-translate
-GitHub Environment: chrome-web-store（待创建，仅允许 v* 标签）
+GitHub Environment: chrome-web-store（仅允许 v* 标签）
 ```
 
-Chrome Web Store 发布者账号已关联上述服务账号；新 GitHub 仓库仍需创建 `chrome-web-store` Environment，并保存 `GCP_WORKLOAD_IDENTITY_PROVIDER` 和 `GCP_SERVICE_ACCOUNT` 两项非敏感变量。整个流程不创建或保存服务账号 JSON 私钥。
+Chrome Web Store 发布者账号已关联上述服务账号；GitHub 仓库已创建 `chrome-web-store` Environment，保存 `GCP_WORKLOAD_IDENTITY_PROVIDER` 和 `GCP_SERVICE_ACCOUNT` 两项非敏感变量，并限制为 `v*` 标签。整个流程不创建或保存服务账号 JSON 私钥。
 
-> 当前 `1.0.0` 已由人工上传到商店后台，但尚未提交审核。可以先提交自动发布工作流，但不要创建 `v1.0.0` 标签。第一次自动更新应把 `manifest.json` 提升到 `1.0.1`，并创建 `v1.0.1` 标签。
+> 初始版本 `1.0.0` 已由人工上传并提交审核，不能创建 `v1.0.0` 标签重复发布。第一次自动更新应把 `manifest.json` 提升到 `1.0.1`，并创建 `v1.0.1` 标签。
 
-## 零、先创建 GitHub 仓库
+## 零、确认 GitHub 仓库
 
-当前本地目录还不是 Git 仓库，也没有远端。先创建公开仓库 `ruiange/github-translate`，再初始化本地仓库、添加 SSH 远端并推送 `main`。仓库公开后，商店中填写的隐私政策地址 `https://github.com/ruiange/github-translate/blob/main/PRIVACY.md` 才能公开访问。
+公开仓库 `ruiange/github-translate` 已创建并推送 `main`。商店中填写的隐私政策地址为 `https://github.com/ruiange/github-translate/blob/main/PRIVACY.md`。
 
-推送后获取 GitHub 的数字 Repository ID：
+仓库的数字 Repository ID 可用以下命令复核：
 
 ```bash
 gh api repos/ruiange/github-translate --jq .id
 ```
 
-把输出的数字替换本文中的 `<GITHUB_REPOSITORY_ID>`。OIDC Provider 必须绑定数字 ID，不能只依赖可能被转让或重命名的仓库名称。
+当前输出应为 `1316859450`。OIDC Provider 必须绑定数字 ID，不能只依赖可能被转让或重命名的仓库名称。
 
 ## 一、配置 Google Cloud
 
@@ -52,7 +52,7 @@ export GCP_SERVICE_ACCOUNT_NAME="github-cws-publisher"
 export GCP_SERVICE_ACCOUNT="${GCP_SERVICE_ACCOUNT_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com"
 export GCP_WIF_POOL="github-actions"
 export GCP_WIF_PROVIDER="github-translate"
-export GITHUB_REPOSITORY_ID="<GITHUB_REPOSITORY_ID>"
+export GITHUB_REPOSITORY_ID="1316859450"
 ```
 
 确认 Chrome Web Store API、Workload Identity 和 IAM 所需 API 已经启用。以下服务账号已存在，只有在实际缺失时才执行创建命令：

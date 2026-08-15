@@ -16,6 +16,7 @@
   const statusKeys = new Set(contextual.status ?? []);
   const fieldKeys = new Set(contextual.field ?? []);
   const badgeKeys = new Set(contextual.badge ?? []);
+  const settingsKeys = new Set(contextual.settings ?? []);
   const translatableAttributes = Object.freeze([
     "placeholder",
     "title",
@@ -236,6 +237,20 @@
     userContentSelector
   ].join(",");
 
+  const settingsCustomTextSelector = [
+    "[data-testid*='application-name' i]",
+    "[data-testid*='app-name' i]",
+    "[data-testid*='key-name' i]",
+    "[data-testid*='key-title' i]",
+    "[data-testid*='token-name' i]",
+    "[data-testid*='ruleset-name' i]",
+    "[data-testid*='property-name' i]",
+    "[data-testid*='saved-reply-title' i]",
+    "[data-testid*='environment-name' i]",
+    "[data-testid*='secret-name' i]",
+    "[data-testid*='variable-name' i]"
+  ].join(",");
+
   const translationRecords = new WeakMap();
   const attributeRecords = new WeakMap();
   const connectedTranslatedNodes = new Set();
@@ -250,9 +265,22 @@
 
   const normalizeText = (value) => value.replace(/\s+/gu, " ").trim();
 
+  function getTranslatedText(sourceText) {
+    if (
+      sourceText === "Name" &&
+      /^\/settings(?:\/profile)?\/?$/u.test(window.location.pathname)
+    ) {
+      return "姓名";
+    }
+
+    return dictionary[sourceText];
+  }
+
   const navigationRouteSegments = Object.freeze({
     "Dashboard": ["dashboard"],
+    "Profile": ["profile"],
     "Pull requests": ["pulls"],
+    "Pull Requests": ["pulls"],
     "Issues": ["issues"],
     "Codespaces": ["codespaces"],
     "Marketplace": ["marketplace"],
@@ -271,6 +299,20 @@
     "People": ["people"],
     "Teams": ["teams"],
     "Activity": ["activity"],
+    "General": ["general"],
+    "Access": ["access", "collaboration"],
+    "Appearance": ["appearance"],
+    "Archives": ["archives"],
+    "Credentials": ["security"],
+    "Integrations": ["integrations"],
+    "Planning": ["planning"],
+    "Policies": ["policies"],
+    "Pushes": ["pushes"],
+    "Repository": ["repository", "repositories"],
+    "Configurations": ["configurations"],
+    "Logs": ["logs", "audit-log"],
+    "Usage": ["usage", "billing"],
+    "Licensing": ["licensing", "billing"],
     "Branches": ["branches"],
     "Tags": ["tags"],
     "Releases": ["releases"],
@@ -422,12 +464,98 @@
       element.closest(
         [
           "label",
+          "legend",
           "dt",
           "th",
+          "[role='radio']",
+          "[role='checkbox']",
           "[role='columnheader']",
+          "input[aria-label]",
+          "textarea[aria-label]",
+          "select[aria-label]",
           "[data-testid*='field-label' i]",
           "[class*='FormControl-label' i]",
           "[class*='form-label' i]"
+        ].join(",")
+      )
+    );
+  }
+
+  function isSettingsPage() {
+    const pathname = window.location.pathname;
+
+    return (
+      /^\/settings(?:\/|$)/u.test(pathname) ||
+      /^\/(?:organizations|orgs)\/[^/]+\/settings(?:\/|$)/u.test(pathname) ||
+      /^\/orgs\/[^/]+\/teams\/[^/]+\/settings(?:\/|$)/u.test(pathname) ||
+      /^\/enterprises\/[^/]+\/settings(?:\/|$)/u.test(pathname) ||
+      /^\/[^/]+\/[^/]+\/settings(?:\/|$)/u.test(pathname)
+    );
+  }
+
+  /**
+   * 设置页会把导航词、状态和字段名放在标题、卡片及单选项中。
+   * 这里只放行明确的设置 UI 容器，用户填写的输入值仍由内容保护规则排除。
+   */
+  function isSettingsContext(element) {
+    if (!isSettingsPage()) {
+      return false;
+    }
+
+    return Boolean(
+      element.closest(
+        [
+          "nav",
+          "[role='navigation']",
+          "h1",
+          "h2",
+          "h3",
+          "h4",
+          "h5",
+          "h6",
+          "legend",
+          "label",
+          "dt",
+          "summary",
+          "button",
+          "a[href*='/settings']",
+          "[role='button']",
+          "[role='radio']",
+          "[role='checkbox']",
+          "[role='tab']",
+          "[role='menuitem']",
+          "[role='option']",
+          "option",
+          "[role='status']",
+          "input[placeholder]",
+          "textarea[placeholder]",
+          "input[aria-label]",
+          "textarea[aria-label]",
+          "select[aria-label]",
+          ".UnderlineNav",
+          ".SideNav",
+          "[data-testid*='settings' i]"
+        ].join(",")
+      )
+    );
+  }
+
+  function isSettingsDescriptionContext(element) {
+    if (
+      !isSettingsPage() ||
+      element.closest(settingsCustomTextSelector)
+    ) {
+      return false;
+    }
+
+    return Boolean(
+      element.closest(
+        [
+          "p",
+          "li",
+          "[class*='FormControl-caption' i]",
+          "[class*='form-note' i]",
+          "[class*='form-hint' i]"
         ].join(",")
       )
     );
@@ -500,6 +628,7 @@
   function isApprovedUiText(element, sourceText) {
     if (
       isProjectCustomText(element) ||
+      Boolean(element.closest(settingsCustomTextSelector)) ||
       isRepositoryPathText(element, sourceText)
     ) {
       return false;
@@ -531,6 +660,16 @@
     if (badgeKeys.has(sourceText)) {
       restricted = true;
       approved ||= isBadgeContext(element);
+    }
+
+    if (settingsKeys.has(sourceText)) {
+      restricted = true;
+      approved ||=
+        isSettingsContext(element) || isSettingsDescriptionContext(element);
+    }
+
+    if (restricted) {
+      approved ||= isSettingsContext(element);
     }
 
     return !restricted || approved;
@@ -615,7 +754,7 @@
       return;
     }
 
-    const translatedText = dictionary[sourceText];
+    const translatedText = getTranslatedText(sourceText);
 
     if (
       !translatedText ||
@@ -715,7 +854,7 @@
       return;
     }
 
-    const translatedText = dictionary[sourceText];
+    const translatedText = getTranslatedText(sourceText);
 
     if (
       !translatedText ||
