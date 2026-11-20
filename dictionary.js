@@ -1,6 +1,158 @@
 (() => {
   "use strict";
 
+  // 先按页面和控件定位，再查找精准词条，不翻译内容区中的同名文字。
+  const scopedPages = [
+    {
+      path: /^\/[^/]+\/[^/]+\/releases(?:\/|$)/u,
+      groups: [
+        ["h1[data-component='PH_Title']", {
+          "Releases": "发行版"
+        }],
+        ["[data-component='Sidebar.SectionGroup'] h2", {
+          "On this page": "本页内容"
+        }],
+        ["input#release-filter", {
+          "Find a release": "查找发行版"
+        }],
+        ["select-panel[id^='select-panel-'] > dialog-helper > button .Button-label", {
+          "Compare": "比较"
+        }],
+        ["select-panel[id^='select-panel-'] dialog .Overlay-title", {
+          "Choose a tag to compare": "选择要比较的标签"
+        }],
+        ["select-panel[id^='select-panel-'] dialog .Overlay-footer a[href$='/tags']", {
+          "View all tags": "查看所有标签"
+        }],
+        ["details-toggle > details > summary[data-target='details-toggle.summaryTarget'] .text-bold", {
+          "Assets": "资源文件"
+        }],
+        ["details-toggle a[href*='/archive/refs/tags/'] .text-bold", {
+          "Source code": "源代码"
+        }],
+        ["a[href$='/releases/latest'] .Label", {
+          "Latest": "最新版"
+        }]
+      ]
+    },
+    {
+      path: /^\/[^/]+\/[^/]+\/tags\/?$/u,
+      groups: [
+        ["h1[data-component='PH_Title'], section[aria-label='Tags results'] .Box-header", {
+          "Tags": "标签"
+        }],
+        ["section[aria-label='Tags results'] .commit .color-fg-muted > span", {
+          "Immutable": "不可变"
+        }],
+        ["section[aria-label='Tags results'] .commit .sr-only", {
+          ". This tag is bound to an immutable release and cannot be reused.": "。此标签已绑定到不可变的发行版，无法重复使用。"
+        }]
+      ]
+    },
+    {
+      path: /^\/[^/]+\/[^/]+\/discussions(?:\/categories\/[^/]+)?\/?$/u,
+      groups: [
+        ["h2#discussions-list", {
+          "Discussions": "讨论"
+        }],
+        [".Layout-sidebar h3, .Layout-sidebar experimental-action-list, .Layout-sidebar nav.NavigationList", {
+          "Categories": "分类"
+        }],
+        [".discussions-button-wrap summary, .discussions-button-wrap details-menu a[role='menuitemradio']", {
+          "Sort by:": "排序方式：",
+          "Latest activity": "最近活动",
+          "Date created": "创建时间",
+          "Top: Past day": "热门：过去一天",
+          "Top: Past week": "热门：过去一周",
+          "Top: Past month": "热门：过去一个月",
+          "Top: Past year": "热门：过去一年",
+          "Top: All": "热门：全部时间"
+        }],
+        ["h2#pinned-discussions", {
+          "Pinned Discussions": "置顶讨论"
+        }],
+        ["#discussions-search-combobox-form input#discussions-search-combobox, #discussions-search-combobox-form label[for='discussions-search-combobox']", {
+          "Search all discussions": "搜索所有讨论"
+        }],
+        ["dialog#label-select-menu-dialog .Overlay-title", {
+          "Filter by label": "按标签筛选"
+        }],
+        ["nav.NavigationList a[href$='/discussions'] .ActionList-item-label", {
+          "View all discussions": "查看所有讨论"
+        }]
+      ]
+    },
+    {
+      path: /^\/[^/]+\/[^/]+\/actions(?:\/workflows\/[^/]+)?\/?$/u,
+      groups: [
+        ["#repo-content-turbo-frame react-app[app-name='repo'] input[role='combobox']", {
+          "Search runs": "搜索运行记录"
+        }]
+      ]
+    },
+    {
+      path: /^\/trending(?:\/developers)?(?:\/[^/]+)?\/?$/u,
+      groups: [
+        [".application-main main .color-bg-subtle > .container-lg > p", {
+          "See what the GitHub community is most excited about today.": "看看 GitHub 社区今天最关注什么。"
+        }],
+        ["nav.subnav a[href='/trending/developers']", {
+          "Developers": "开发者"
+        }],
+        ["#select-menu-spoken-language > summary", {
+          "Spoken Language:": "自然语言："
+        }],
+        ["#select-menu-spoken-language .select-menu-title", {
+          "Select a spoken language": "选择自然语言"
+        }],
+        ["#select-menu-spoken-language input#text-filter-field-spoken-language", {
+          "Filter spoken languages": "筛选自然语言",
+          "Type or choose a spoken language": "输入或选择自然语言"
+        }],
+        ["#select-menu-language > summary", {
+          "Language:": "编程语言："
+        }],
+        ["#select-menu-language .select-menu-title", {
+          "Select a language": "选择编程语言"
+        }],
+        ["#select-menu-language input", {
+          "Filter languages": "筛选编程语言",
+          "Type or choose a language": "输入或选择编程语言"
+        }],
+        ["#select-menu-language > summary .text-bold, #select-menu-spoken-language > summary .text-bold", {
+          "Any": "不限"
+        }],
+        ["#select-menu-date > summary", {
+          "Date range:": "日期范围："
+        }],
+        ["#select-menu-date > summary .text-bold, #select-menu-date [role='menuitemradio'] .select-menu-item-text", {
+          "This week": "本周",
+          "This month": "本月"
+        }]
+      ]
+    },
+    {
+      path: /^\/topics\/?$/u,
+      groups: [
+        [".application-main main .color-bg-subtle > .container-lg > p", {
+          "Browse popular topics on GitHub.": "浏览 GitHub 上的热门主题。"
+        }],
+        [".application-main main .container-lg h2", {
+          "All featured topics": "全部精选主题",
+          "Popular topics": "热门主题"
+        }]
+      ]
+    }
+  ];
+
+  const scoped = Object.freeze(scopedPages.flatMap(({ path, groups }) =>
+    groups.flatMap(([selector, entries]) =>
+      Object.entries(entries).map(([source, translation]) =>
+        Object.freeze({ path, selector, source, translation })
+      )
+    )
+  ));
+
   /**
    * GitHub 本地精确匹配词库。
    *
@@ -8,6 +160,8 @@
    * 引擎区分大小写，并且只在完整文本一致时替换，不做部分或模糊匹配。
    */
   const exact = Object.freeze({
+    ...Object.fromEntries(scoped.map(({ source, translation }) => [source, translation])),
+
     // 全局导航与账户菜单
     "Skip to content": "跳到主要内容",
     "Navigation Menu": "导航菜单",
@@ -1303,7 +1457,8 @@
     value: Object.freeze({
       version: "2026.08.15.1",
       exact,
-      contextual
+      contextual,
+      scoped
     }),
     configurable: false,
     enumerable: false,

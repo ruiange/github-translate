@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "GitHub 中文翻译助手",
   "short_name": "GitHub 中文",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "使用内置本地词库翻译 GitHub 网站中的固定界面文案。",
   "icons": {
     "16": "icons/icon-16.png",

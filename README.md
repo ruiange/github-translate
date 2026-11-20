@@ -30,7 +30,7 @@
 
 ## 维护词库
 
-词条全部位于 `dictionary.js` 的 `exact` 对象中：
+通用词条位于 `dictionary.js` 的 `exact` 对象中：
 
 ```js
 const exact = Object.freeze({
@@ -51,6 +51,18 @@ const exact = Object.freeze({
 
 ```html
 <div data-github-translate="off">...</div>
+```
+
+对于“同一句话既可能是界面文字，也可能是仓库内容”的场景，在同一文件的 `scopedPages` 中同时指定 URL 路径和稳定的 DOM 选择器。首批规则覆盖发行版、标签、讨论、Actions、趋势和主题页面。优先用固定 ID、组件或链接路径，不要依赖随机生成的 ID、构建哈希或待翻译的属性值。
+
+## 回归测试
+
+扩展运行和打包仍不需要 npm 依赖。维护者可选用 Node.js 18+ 和 jsdom 验证页面限定、按需加载内容、关闭后恢复英文，以及用户内容保持原样：
+
+```bash
+deps="$(mktemp -d)"
+npm install --prefix "$deps" --no-save --ignore-scripts jsdom@26.1.0
+NODE_PATH="$deps/node_modules" node --test tests/scoped-coverage.cjs
 ```
 
 ## 文件结构

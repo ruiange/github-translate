@@ -10,6 +10,13 @@
     return;
   }
 
+  const scopedRules = new Map();
+  for (const { source, path, selector } of dictionaryBundle.scoped ?? []) {
+    const rules = scopedRules.get(source) ?? [];
+    rules.push({ path, selector });
+    scopedRules.set(source, rules);
+  }
+
   const contextual = dictionaryBundle.contextual ?? {};
   const navigationKeys = new Set(contextual.navigation ?? []);
   const actionKeys = new Set(contextual.action ?? []);
@@ -68,6 +75,8 @@
     "[data-testid*='milestone-name' i]",
     "[data-testid*='project-name' i]",
     "[data-testid*='discussion-title' i]",
+    "a.discussion-title",
+    "h1.gh-header-title",
     "[data-testid*='branch-picker' i]",
     "[data-testid*='tag-picker' i]",
     "[data-testid*='repository-picker' i]",
@@ -97,6 +106,8 @@
     "a[href*='/milestone/']",
     "a[href*='/topics/']",
     "a[href*='/releases/tag/']",
+    "[data-component='Sidebar.Main'] a[href^='#release-']",
+    "section[data-release-anchor] > h2.sr-only",
     "a[href*='/actions/workflows/']",
     "a[href*='/actions/runs/']",
     "main del",
@@ -177,11 +188,11 @@
     "[data-testid*='discussion-form' i] select",
     "[data-testid*='discussion-form' i] input[placeholder]",
     "[data-testid*='discussion-form' i] textarea[placeholder]",
-    "form[action*='/discussions'] label",
+    "form[action*='/discussions'] label:not(#discussions-search-combobox-form label[for='discussions-search-combobox'])",
     "form[action*='/discussions'] legend",
     "form[action*='/discussions'] [role='option']",
     "form[action*='/discussions'] select",
-    "form[action*='/discussions'] input[placeholder]",
+    "form[action*='/discussions'] input[placeholder]:not(#discussions-search-combobox-form input#discussions-search-combobox)",
     "form[action*='/discussions'] textarea[placeholder]",
     "[data-testid*='workflow-dispatch' i] label",
     "[data-testid*='workflow-dispatch' i] [role='option']",
@@ -262,6 +273,7 @@
   let flushHandle = null;
   let flushMode = null;
   let startupHandle = null;
+  let lastPathname = window.location.pathname;
 
   const normalizeText = (value) => value.replace(/\s+/gu, " ").trim();
 
@@ -632,6 +644,19 @@
       isRepositoryPathText(element, sourceText)
     ) {
       return false;
+    }
+
+    const rules = scopedRules.get(sourceText);
+    if (rules) {
+      if (rules.some(({ path, selector }) =>
+        path.test(window.location.pathname) && Boolean(element.closest(selector))
+      )) {
+        return true;
+      }
+      // 已有的导航词在其他页面仍沿用原来的上下文规则。
+      if (!navigationKeys.has(sourceText)) {
+        return false;
+      }
     }
 
     let restricted = false;
@@ -1294,10 +1319,26 @@
     }
   }
 
+  function refreshOnPathChange() {
+    const pathname = window.location?.pathname;
+    if (!pathname || pathname === lastPathname) {
+      return;
+    }
+    lastPathname = pathname;
+    if (enabled) {
+      queueRoot(document.body ?? document.documentElement);
+    }
+  }
+
+  document.addEventListener("turbo:load", refreshOnPathChange);
+  window.addEventListener("popstate", refreshOnPathChange);
+
   const observer = new MutationObserver((mutations) => {
     if (!preferenceLoaded) {
       return;
     }
+
+    refreshOnPathChange();
 
     let shouldPrune = false;
     const addedNodesByTarget = new Map();
