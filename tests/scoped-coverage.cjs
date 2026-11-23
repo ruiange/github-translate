@@ -209,3 +209,140 @@ test("关闭扩展时恢复占位符和无障碍标签，不改变输入值", as
   await assertValue(document, ["#release-filter", "Find a release", "aria-label"]);
   assert.equal(document.querySelector("#release-filter").value, "user typed");
 });
+
+test("dashboard translates verified chrome and native hints, not user contents or keyboard markup", async () => {
+  const { window, document, setEnabled } = setup("/", `
+    <meta name="user-login" content="fixture-user">
+    <header><button aria-haspopup="dialog" aria-label="Open quick search dialog, type / to search" id="global-search"><span>Type</span> <kbd>/</kbd> <span>to search</span></button></header>
+    <aside class="feed-left-sidebar">
+      <h3>Pin your homepage <span id="new-feature">New</span></h3>
+      <p>Choose whether github.com opens to Home or Feed. Select the pin next to either one.</p>
+      <button>Got it</button><button>Add repositories</button>
+      <p>Add the repositories you use most.</p>
+    </aside>
+    <main>
+      <h1 id="greeting">Good afternoon, fixture-user!</h1>
+      <div class="markdown-body"><h2 id="quoted-greeting">Good afternoon, fixture-user!</h2></div>
+      <h3 id="other-greeting">Good afternoon, other-user!</h3>
+      <react-partial partial-name="copilot-chat-input-partial">
+        <textarea id="copilot-chat-textarea" placeholder="Ask anything or type @ to add context" aria-label="Ask anything or type @ to add context with Copilot">Ask anything or type @ to add context</textarea>
+        <button data-component="ActionMenu.Button" id="ask"><span>Ask</span></button>
+        <button id="model">Model: Auto</button><button id="optimize">Optimized for: Balance</button>
+        <ul><li><button data-component="Button">Create issue</button></li></ul>
+        <div id="editable" contenteditable="true" role="textbox" data-placeholder="Ask anything"><span id="typed">Ask anything</span></div>
+        <div id="alt-editable" contenteditable="plaintext-only" role="textbox" aria-placeholder="Ask anything"><span>Ask anything</span></div>
+        <div id="unknown" contenteditable="true" role="textbox" data-placeholder="My custom placeholder">Ask anything</div>
+      </react-partial>
+      <textarea id="external" placeholder="Ask anything or type @ to add context"></textarea>
+      <react-partial app-name="dashboard-lists">
+        <div><h2 id="pull-heading">Pull requests</h2><a data-component="Link" href="/pulls" id="view-pulls">View all pull requests</a></div>
+        <section><div><p id="empty-pulls">No pull requests found, try a different filter.</p></div></section>
+        <div><h2 id="issue-heading">Issues</h2></div>
+        <section><h3 id="repos-heading">Repositories</h3><p id="empty-issues">No issues found, try a different filter.</p></section>
+      </react-partial>
+      <aside class="dashboard-changelog">
+        <h2 class="dashboard-changelog__title">Latest from our changelog</h2>
+        <a id="changelog-link" href="https://github.blog/changelog/">View changelog →</a>
+        <a id="changelog-entry" href="https://github.blog/changelog/2026-08-10-entry/">View changelog →</a>
+      </aside>
+    </main>
+    <footer><button>Manage cookies</button><a>Do not share my personal information</a></footer>
+  `);
+  const key = document.querySelector("#global-search kbd");
+  const original = document.querySelector("#copilot-chat-textarea").value;
+  await assertValue(document, ["#greeting", "下午好，fixture-user！"]);
+  await Promise.all([
+    ["#quoted-greeting", "Good afternoon, fixture-user!"], ["#other-greeting", "Good afternoon, other-user!"],
+    ["#global-search span:nth-of-type(1)", "按"], ["#global-search span:nth-of-type(2)", "搜索"],
+    ["#global-search", "打开快速搜索对话框，按 / 搜索", "aria-label"], ["#new-feature", "新功能"],
+    [".feed-left-sidebar p:first-of-type", "选择打开 github.com 时进入首页还是动态。点击对应选项旁的图钉即可固定。"],
+    [".feed-left-sidebar button", "知道了"], [".feed-left-sidebar button:nth-of-type(2)", "添加仓库"],
+    ["#copilot-chat-textarea", "问任何问题，或输入 @ 添加上下文", "placeholder"],
+    ["#copilot-chat-textarea", "向 Copilot 提问，或输入 @ 添加上下文", "aria-label"],
+    ["#ask", "提问"], ["#model", "模型：自动"], ["#optimize", "优化目标：均衡"],
+    ["react-partial li button", "新建议题"],
+    ["#editable", "问任何问题", "data-placeholder"], ["#alt-editable", "问任何问题", "aria-placeholder"],
+    ["#typed", "Ask anything"], ["#unknown", "My custom placeholder", "data-placeholder"],
+    ["#external", "Ask anything or type @ to add context", "placeholder"],
+    ["#pull-heading", "拉取请求"], ["#issue-heading", "议题"], ["#repos-heading", "仓库"],
+    ["#view-pulls", "查看所有拉取请求"], ["#empty-pulls", "未找到拉取请求，请试试其他筛选条件。"],
+    ["#empty-issues", "未找到议题，请试试其他筛选条件。"],
+    [".dashboard-changelog__title", "最新更新日志"], ["#changelog-link", "查看更新日志 →"], ["#changelog-entry", "View changelog →"],
+    ["footer button", "管理 Cookie"], ["footer a", "请勿共享我的个人信息"]
+  ].map(probe => assertValue(document, probe)));
+  assert.equal(document.querySelector("#global-search kbd"), key);
+  assert.equal(key.textContent, "/");
+  assert.equal(document.querySelector("#copilot-chat-textarea").value, original);
+
+  const editable = document.querySelector("#editable");
+  editable.setAttribute("data-placeholder", "My custom placeholder");
+  await assertValue(document, ["#editable", "My custom placeholder", "data-placeholder"]);
+  editable.setAttribute("data-placeholder", "Ask anything or type @ to add context");
+  await assertValue(document, ["#editable", "问任何问题，或输入 @ 添加上下文", "data-placeholder"]);
+  const textarea = document.querySelector("#copilot-chat-textarea");
+  textarea.value = "自拟提示 Ask anything";
+  window.history.pushState({}, "", "/fixture/repo/issues");
+  document.dispatchEvent(new window.Event("turbo:load"));
+  await assertValue(document, ["#editable", "Ask anything or type @ to add context", "data-placeholder"]);
+  await assertValue(document, ["#greeting", "Good afternoon, fixture-user!"]);
+  assert.equal(textarea.value, "自拟提示 Ask anything");
+  window.history.pushState({}, "", "/");
+  document.dispatchEvent(new window.Event("turbo:load"));
+  await assertValue(document, ["#editable", "问任何问题，或输入 @ 添加上下文", "data-placeholder"]);
+  setEnabled(false);
+  await assertValue(document, ["#editable", "Ask anything or type @ to add context", "data-placeholder"]);
+  await assertValue(document, ["#alt-editable", "Ask anything", "aria-placeholder"]);
+  await assertValue(document, ["#copilot-chat-textarea", "Ask anything or type @ to add context", "placeholder"]);
+  await assertValue(document, ["#copilot-chat-textarea", "Ask anything or type @ to add context with Copilot", "aria-label"]);
+  assert.equal(textarea.value, "自拟提示 Ask anything");
+  setEnabled(true);
+  await assertValue(document, ["#editable", "问任何问题，或输入 @ 添加上下文", "data-placeholder"]);
+  window.close();
+});
+
+test("scoped hints translate on list filters while preserving the actual query and authored fields", async () => {
+  const table = [
+    ["/fixture/repo/issues", "Search issues", "搜索议题", "Clear filter", "清除筛选"],
+    ["/fixture/repo/pulls", "Search pull requests", "搜索拉取请求", "Sort by Newest descending", "按创建时间从新到旧排序"],
+    ["/fixture/repo/pull/42/files", "Filter changed files", "筛选已更改的文件", "Clear filters", "清除筛选"],
+    ["/fixture/repo/labels", "Search all labels", "搜索所有标签"],
+    ["/notifications", "Search notifications", "搜索通知", "Manage notifications", "管理通知"],
+    ["/orgs/fixture/projects/12/views/1", "Filter by keyword or by field", "按关键词或字段筛选", "Add items", "添加条目"]
+  ];
+  await Promise.all(table.map(async ([route, source, translated, fixedAction, localizedAction]) => {
+    const { window, document, setEnabled } = setup(route, `
+      <main>
+        <input id="query" type="search" placeholder="${source}" aria-label="${source}">
+        <button id="chrome">${fixedAction ?? ""}</button>
+        <div class="markdown-body"><p id="authored">${fixedAction ?? source}</p></div>
+        <textarea id="custom" placeholder="${source}"></textarea>
+      </main>`);
+    const input = document.querySelector("#query");
+    input.value = source;
+    await assertValue(document, ["#query", translated, "placeholder"]);
+    await assertValue(document, ["#query", translated, "aria-label"]);
+    if (fixedAction) await assertValue(document, ["#chrome", localizedAction]);
+    await assertValue(document, ["#authored", fixedAction ?? source]);
+    await assertValue(document, ["#custom", source, "placeholder"]);
+    assert.equal(input.value, source);
+    setEnabled(false);
+    await assertValue(document, ["#query", source, "placeholder"]);
+    window.close();
+  }));
+});
+
+test("new protections label fixed settings controls without translating authorization values", async () => {
+  const { window, document } = setup("/fixture/repo/settings/branches", `
+    <main>
+      <h2>Protect matching branches</h2>
+      <label><input type="checkbox">Require a pull request before merging</label>
+      <input id="rename" value="Require a pull request before merging">
+      <div data-testid="ruleset-name"><button id="rule-name">Require a pull request before merging</button></div>
+    </main>
+  `);
+  await assertValue(document, ["h2", "保护匹配的分支"]);
+  await assertValue(document, ["label", "合并前必须发起拉取请求"]);
+  await assertValue(document, ["#rule-name", "Require a pull request before merging"]);
+  assert.equal(document.querySelector("#rename").value, "Require a pull request before merging");
+  window.close();
+});

@@ -10,7 +10,7 @@
 - 等待页面完成加载后再执行首轮翻译，降低对页面初始化的干扰。
 - 主动跳过 README/Markdown、Issue 与 Pull Request 正文、评论、仓库名、用户名、分支、标签、提交信息、源码、Diff、日志、终端及编辑区。
 - `Code`、`Issues`、`Actions`、`Settings` 等歧义短词只在导航、菜单、按钮或状态组件中翻译。
-- 只修改匹配到的文本节点，以及 `placeholder`、`title`、`aria-label` 属性；不会修改输入值、链接、接口、表单数据或页面业务逻辑。
+- 只修改匹配到的界面文本节点，以及 `placeholder`、`title`、`aria-label`。对明确列入词库的 GitHub 编辑器，还支持外层的 `data-placeholder` 和 `aria-placeholder`。不会修改输入值、编辑器内容、链接、快捷键、接口、表单数据或页面业务逻辑。
 
 ## 本地安装
 
@@ -64,6 +64,19 @@ deps="$(mktemp -d)"
 npm install --prefix "$deps" --no-save --ignore-scripts jsdom@26.1.0
 NODE_PATH="$deps/node_modules" node --test tests/scoped-coverage.cjs
 ```
+
+## 回归检查
+
+对新增界面文案优先设置页面路径和控件范围。原生搜索框以及编辑器的提示属性也应限定到对应控件，不能把用户输入、保存的筛选名称或需要原样输入的确认内容作为翻译目标。
+
+| 检查范围 | 核对内容 |
+| --- | --- |
+| 登录后首页、全局搜索和页脚 | 问候、Copilot 提示与快捷操作、列表空态、侧栏和更新日志入口；保留用户名、键帽和日志文章标题 |
+| 议题、拉取请求、标签、通知和 Projects | 搜索提示、筛选与操作文案；保留输入的查询、卡片和自定义标签 |
+| 拉取请求文件、检查及创建页 | 文件筛选、差异视图、空态、固定对话框文案；不翻译文件名、提交或正文 |
+| 分支保护、规则集、团队和状态 | 保留规则名、分支名、团队名、用户自填状态及确认输入 |
+
+`tests/scoped-coverage.cjs` 使用 jsdom 检查匹配范围、异步插入、Turbo 导航和暂停恢复。实际使用扩展无需安装 jsdom；本地运行测试可在项目之外安装后设置 `NODE_PATH`，执行 `node --test tests/scoped-coverage.cjs`。GitHub 的分批上线和账户权限可能改变页面结构，发现仍未翻译的固定控件时，请提供页面路径和原文以便补齐。
 
 ## 文件结构
 

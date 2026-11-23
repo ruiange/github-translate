@@ -4,6 +4,264 @@
   // 先按页面和控件定位，再查找精准词条，不翻译内容区中的同名文字。
   const scopedPages = [
     {
+      // Personal dashboard. Keep user-authored activity and changelog entries in English.
+      path: /^\/(?:dashboard\/?)?$/u,
+      groups: [
+        ["react-partial:is([partial-name='dashboard-lists'], [app-name='dashboard-lists']) p", {
+          "No pull requests found, try a different filter.": "未找到拉取请求，请试试其他筛选条件。",
+          "No issues found, try a different filter.": "未找到议题，请试试其他筛选条件。"
+        }],
+        [
+          "react-partial:is([partial-name='copilot-chat-input-partial'], [app-name='copilot-chat-input-partial']) :is(textarea#copilot-chat-textarea, [contenteditable='true'][role='textbox'], [contenteditable='plaintext-only'][role='textbox']), main textarea#copilot-chat-textarea",
+          {
+            "Ask anything or type @ to add context": "问任何问题，或输入 @ 添加上下文",
+            "Ask anything": "问任何问题",
+            "Ask anything or type @ to add context with Copilot": "向 Copilot 提问，或输入 @ 添加上下文"
+          },
+          ["placeholder", "data-placeholder", "aria-placeholder", "aria-label", "title"]
+        ],
+        ["react-partial:is([partial-name='copilot-chat-input-partial'], [app-name='copilot-chat-input-partial']) :is(button, [role='button'], [role='menuitem'], [role='menuitemradio'])", {
+          "Ask": "提问",
+          "Debug": "调试",
+          "Agent": "代理",
+          "Create issue": "新建议题",
+          "Write code": "编写代码",
+          "Auto": "自动",
+          "Model: Auto": "模型：自动",
+          "Optimized for:": "优化目标：",
+          "Optimized for: Balance": "优化目标：均衡",
+          "Optimized for: Speed": "优化目标：速度",
+          "Optimized for: Quality": "优化目标：质量"
+        }],
+        ["react-partial:is([partial-name='dashboard-lists'], [app-name='dashboard-lists']) :is(h2, section > h3, button, a[href='/pulls'], a[href='/issues'], a[data-component='Link'])", {
+          "Repositories": "仓库",
+          "Pull requests": "拉取请求",
+          "Issues": "议题",
+          "View all pull requests": "查看所有拉取请求",
+          "View all issues": "查看所有议题",
+          "Filter pull requests": "筛选拉取请求",
+          "Filter issues": "筛选议题"
+        }],
+        ["aside.feed-left-sidebar h3 :is(span, [data-component='Label'])", {
+          "New": "新功能"
+        }],
+        ["aside.feed-left-sidebar :is(h2, h3, p, button, label, [role='button'])", {
+          "Pin your homepage": "固定首页",
+          "Choose whether github.com opens to Home or Feed. Select the pin next to either one.": "选择打开 github.com 时进入首页还是动态。点击对应选项旁的图钉即可固定。",
+          "Add the repositories you use most.": "添加你最常用的仓库。",
+          "Repositories": "仓库"
+        }],
+        [".dashboard-changelog > h2.dashboard-changelog__title", {
+          "Latest from our changelog": "最新更新日志"
+        }],
+        ["aside.feed-left-sidebar :is(button, [role='button'], a[data-component='Link'])", {
+          "Add repositories": "添加仓库",
+          "Got it": "知道了"
+        }],
+        [".dashboard-changelog :is(a[href='https://github.blog/changelog/'], a[href='https://github.blog/changelog'])", {
+          "View changelog": "查看更新日志",
+          "View changelog →": "查看更新日志 →"
+        }]
+      ]
+    },
+    {
+      path: /^\//u,
+      groups: [
+        ["header button[aria-haspopup='dialog'], header button[data-hotkey='/'], header qbsearch-input button, header .AppHeader-search button, header [data-target='qbsearch-input.inputButton']", {
+          "Type": "按",
+          "to search": "搜索",
+          "Type / to search": "按 / 搜索",
+          "Open quick search dialog, type / to search": "打开快速搜索对话框，按 / 搜索"
+        }],
+        ["qbsearch-input :is(button, [role='button'], a[href^='/search'], [role='heading']), dialog[aria-label='Search'] :is(button, a[href^='/search'], [role='heading'])", {
+          "Search all of GitHub": "搜索整个 GitHub",
+          "Saved queries": "已保存的查询",
+          "Manage saved searches": "管理已保存的搜索",
+          "Ask Copilot": "询问 Copilot"
+        }],
+        ["footer :is(button, a), [role='contentinfo'] :is(button, a)", {
+          "Terms": "条款",
+          "Privacy": "隐私",
+          "Status": "状态",
+          "Docs": "文档",
+          "Contact": "联系",
+          "Manage cookies": "管理 Cookie",
+          "Do not share my personal information": "请勿共享我的个人信息"
+        }],
+        ["qbsearch-input input, dialog[aria-label='Search'] input, input[id^='query-builder-'][role='combobox']", {
+          "Search or jump to…": "搜索或跳转…"
+        }, ["placeholder", "aria-label", "title"]]
+      ]
+    },
+    {
+      path: /^\/(?:[^/]+\/[^/]+\/)?(?:issues|pulls)\/?$/u,
+      groups: [
+        ["main :is(input[type='search'], input[role='combobox'], input[name='q'])", {
+          "Search issues": "搜索议题",
+          "Search pull requests": "搜索拉取请求"
+        }, ["placeholder", "aria-label"]],
+        ["main :is(button, input[type='radio'], label, [role='button'], [role='menuitemradio'])", {
+          "Clear filter": "清除筛选",
+          "Change the issues type filter": "更改议题类型筛选",
+          "Comfortable display density": "宽松显示",
+          "Compact display density": "紧凑显示",
+          "Sort by Newest descending": "按创建时间从新到旧排序",
+          "Sort…": "排序…"
+        }]
+      ]
+    },
+    {
+      path: /^\/notifications(?:\/[^/]+)?\/?$/u,
+      groups: [
+        ["main :is(button, nav a, h1, h2, [role='menuitem'])", {
+          "Manage notifications": "管理通知",
+          "Notification settings": "通知设置",
+          "Subscriptions": "订阅",
+          "Mark as done": "标记为已处理",
+          "Unsave": "取消保存"
+        }],
+        ["main :is(input[type='search'], input[name='query'], input[role='combobox'])", {
+          "Search notifications": "搜索通知"
+        }, ["placeholder", "aria-label"]]
+      ]
+    },
+    {
+      path: /^\/(?:orgs|users)\/[^/]+\/projects\/\d+(?:\/|$)/u,
+      groups: [
+        ["main :is(input[type='search'], input[role='combobox'], [role='searchbox'])", {
+          "Filter by keyword or by field": "按关键词或字段筛选"
+        }, ["placeholder", "aria-label"]],
+        ["main :is(button, [role='menuitem'], [role='menuitemradio'])", {
+          "Add item from repository": "从仓库添加条目",
+          "Add items": "添加条目"
+        }]
+      ]
+    },
+    {
+      path: /^\/[^/]+\/[^/]+\/(?:compare(?:\/.*)?|pull\/\d+)\/?$/u,
+      groups: [
+        ["main :is(button, a.btn, summary, [role='button'], [role='menuitem'], [role='menuitemradio'])", {
+          "Create Pull Request": "创建拉取请求",
+          "Create Draft Pull Request": "创建拉取请求草稿",
+          "Draft Pull Request": "拉取请求草稿"
+        }]
+      ]
+    },
+    {
+      path: /^\/[^/]+\/[^/]+\/?$/u,
+      groups: [
+        ["main a[href*='/compare/']:is(.btn, [role='button'])", {
+          "Compare & pull request": "比较并创建拉取请求"
+        }]
+      ]
+    },
+    {
+      path: /^\/[^/]+\/[^/]+\/pull\/\d+\/files\/?$/u,
+      groups: [
+        ["main :is(input[type='search'], input[role='combobox'], [role='searchbox'])", {
+          "Filter changed files": "筛选已更改的文件"
+        }, ["placeholder", "aria-label"]],
+        ["main :is(button, summary, h2, [role='alert'], [role='status'], [role='menuitemradio'])", {
+          "There are no files selected for viewing": "当前没有选中要查看的文件",
+          "Failed to load comments.": "评论加载失败。",
+          "Clear filters": "清除筛选",
+          "File filter": "文件筛选",
+          "Filter by extension": "按扩展名筛选",
+          "Changes from all commits": "所有提交的更改",
+          "Show all changes": "显示全部更改",
+          "Diff view": "差异视图",
+          "Unified Diff View": "统一差异视图",
+          "Split Diff View": "并排差异视图"
+        }]
+      ]
+    },
+    {
+      path: /^\/[^/]+\/[^/]+\/pull\/\d+\/checks\/?$/u,
+      groups: [
+        ["main :is(h1, h2, button, p, [role='alert'], [role='status'])", {
+          "Code scanning results": "代码扫描结果",
+          "Select a check to view from the sidebar": "请从侧栏选择要查看的检查"
+        }]
+      ]
+    },
+    {
+      path: /^\/[^/]+\/[^/]+\/labels\/?$/u,
+      groups: [
+        ["main :is(input[type='search'], input[role='combobox'], input[name='q'])", {
+          "Search all labels": "搜索所有标签"
+        }, ["placeholder", "aria-label"]]
+      ]
+    },
+    {
+      path: /^\/[^/]+\/[^/]+\/settings\/branches(?:\/|$)/u,
+      groups: [
+        ["main :is(label, legend, h2, h3, button, a.btn, summary)", {
+          "Add classic branch protection rule": "添加传统分支保护规则",
+          "Protect matching branches": "保护匹配的分支",
+          "Require a pull request before merging": "合并前必须发起拉取请求",
+          "Require approvals": "要求审批",
+          "Require review from Code Owners": "要求代码所有者审查",
+          "Require status checks to pass before merging": "合并前必须通过状态检查",
+          "Require branches to be up to date before merging": "合并前分支必须为最新",
+          "Require conversation resolution before merging": "合并前必须解决所有讨论",
+          "Require signed commits": "要求签名提交",
+          "Require linear history": "要求线性历史记录",
+          "Require merge queue": "要求使用合并队列",
+          "Allow fork syncing": "允许同步复刻仓库",
+          "Restrict who can push to matching branches": "限制可推送到匹配分支的人员",
+          "Allow force pushes": "允许强制推送",
+          "Allow deletions": "允许删除"
+        }]
+      ]
+    },
+    {
+      path: /^\/[^/]+\/[^/]+\/settings\/rules(?:\/|$)/u,
+      groups: [
+        ["main :is(label, legend, h2, h3, button, a.btn, summary, [role='menuitem'])", {
+          "New ruleset": "新建规则集",
+          "New push ruleset": "新建推送规则集",
+          "Ruleset name": "规则集名称",
+          "Bypass list": "豁免名单",
+          "Add bypass": "添加豁免",
+          "Add Selected": "添加所选项",
+          "For pull requests only": "仅适用于拉取请求",
+          "Target branches": "目标分支",
+          "Target tags": "目标标签",
+          "Add a target": "添加目标",
+          "Branch protections": "分支保护",
+          "Tag protections": "标签保护",
+          "Restrictions": "限制",
+          "Restrict commit metadata": "限制提交元数据",
+          "Restrict branch names": "限制分支名称"
+        }]
+      ]
+    },
+    {
+      path: /^\/orgs\/[^/]+\/teams(?:\/new)?\/?$/u,
+      groups: [
+        ["main :is(h1, h2, label, legend, button, a.btn)", {
+          "Create new team": "创建团队",
+          "Team visibility": "团队可见性",
+          "Parent team": "上级团队"
+        }]
+      ]
+    },
+    {
+      path: /^\/(?:dashboard\/?|[^/]+\/?)?$/u,
+      groups: [
+        ["dialog :is(h1, h2, legend, label, button, summary)", {
+          "Set status": "设置状态",
+          "Expiration": "到期时间",
+          "Visible to": "可见范围",
+          "Busy": "忙碌"
+        }],
+        ["dialog :is(input[type='text'], textarea)", {
+          "What's happening": "你在做什么？",
+          "What's happening?": "你在做什么？"
+        }, ["placeholder", "aria-label"]]
+      ]
+    },
+    {
       path: /^\/[^/]+\/[^/]+\/releases(?:\/|$)/u,
       groups: [
         ["h1[data-component='PH_Title']", {
@@ -146,9 +404,9 @@
   ];
 
   const scoped = Object.freeze(scopedPages.flatMap(({ path, groups }) =>
-    groups.flatMap(([selector, entries]) =>
+    groups.flatMap(([selector, entries, attributes]) =>
       Object.entries(entries).map(([source, translation]) =>
-        Object.freeze({ path, selector, source, translation })
+        Object.freeze({ path, selector, source, translation, attributes })
       )
     )
   ));
@@ -1455,7 +1713,7 @@
 
   Object.defineProperty(globalThis, "__GITHUB_ZH_DICTIONARY__", {
     value: Object.freeze({
-      version: "2026.08.15.1",
+      version: "2026.08.15.2",
       exact,
       contextual,
       scoped

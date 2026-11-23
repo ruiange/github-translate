@@ -11,9 +11,9 @@
   }
 
   const scopedRules = new Map();
-  for (const { source, path, selector } of dictionaryBundle.scoped ?? []) {
+  for (const { source, path, selector, attributes, translation } of dictionaryBundle.scoped ?? []) {
     const rules = scopedRules.get(source) ?? [];
-    rules.push({ path, selector });
+    rules.push({ path, selector, attributes, translation });
     scopedRules.set(source, rules);
   }
 
@@ -26,6 +26,8 @@
   const settingsKeys = new Set(contextual.settings ?? []);
   const translatableAttributes = Object.freeze([
     "placeholder",
+    "data-placeholder",
+    "aria-placeholder",
     "title",
     "aria-label"
   ]);
@@ -277,7 +279,11 @@
 
   const normalizeText = (value) => value.replace(/\s+/gu, " ").trim();
 
-  function getTranslatedText(sourceText) {
+  function getTranslatedText(sourceText, element, attributeName = null) {
+    const scoped = findScopedRule(element, sourceText, attributeName);
+    if (scoped) {
+      return scoped.translation;
+    }
     if (
       sourceText === "Name" &&
       /^\/settings(?:\/profile)?\/?$/u.test(window.location.pathname)
@@ -637,7 +643,34 @@
     }
   }
 
-  function isApprovedUiText(element, sourceText) {
+  function findScopedRule(element, sourceText, attributeName = null, explicitlyNamed = false) {
+    return scopedRules.get(sourceText)?.find(({ path, selector, attributes }) =>
+      path.test(window.location.pathname) &&
+      (attributes
+        ? attributes.includes(attributeName) && element.matches(selector)
+        : !explicitlyNamed && Boolean(element.closest(selector)))
+    );
+  }
+
+  // Match only GitHub's signed-in dashboard greeting and the session's own
+  // account handle. Keep the handle byte-for-byte as shown in the heading.
+  function dashboardGreeting(element, sourceText) {
+    if (!/^\/(?:dashboard\/?)?$/u.test(window.location.pathname)) {
+      return null;
+    }
+    const match = /^(Good morning|Good afternoon|Good evening|Good night|Hello), ([a-z\d-]{1,39})!$/iu.exec(sourceText);
+    if (!match || !element.closest("main h1, main h2, main [role='heading']")) {
+      return null;
+    }
+    const ownLogin = document.querySelector("meta[name='user-login']")?.getAttribute("content");
+    if (!ownLogin || ownLogin.toLowerCase() !== match[2].toLowerCase()) {
+      return null;
+    }
+    const labels = { "good morning": "早上好", "good afternoon": "下午好", "good evening": "晚上好", "good night": "晚安", hello: "你好" };
+    return `${labels[match[1].toLowerCase()]}，${match[2]}！`;
+  }
+
+  function isApprovedUiText(element, sourceText, attributeName = null) {
     if (
       isProjectCustomText(element) ||
       Boolean(element.closest(settingsCustomTextSelector)) ||
@@ -648,13 +681,13 @@
 
     const rules = scopedRules.get(sourceText);
     if (rules) {
-      if (rules.some(({ path, selector }) =>
-        path.test(window.location.pathname) && Boolean(element.closest(selector))
-      )) {
+      if (findScopedRule(element, sourceText, attributeName)) {
         return true;
       }
-      // 已有的导航词在其他页面仍沿用原来的上下文规则。
-      if (!navigationKeys.has(sourceText)) {
+      // 已有受上下文限制的词在其他页面仍沿用原有规则。
+      if (!navigationKeys.has(sourceText) && !actionKeys.has(sourceText) &&
+          !statusKeys.has(sourceText) && !fieldKeys.has(sourceText) &&
+          !badgeKeys.has(sourceText) && !settingsKeys.has(sourceText)) {
         return false;
       }
     }
@@ -715,6 +748,16 @@
       return true;
     }
 
+    if (attributeName === "data-placeholder" || attributeName === "aria-placeholder" ||
+        (attributeName === "aria-label" && element.matches("[role='textbox']"))) {
+      const current = element.getAttribute(attributeName) ?? "";
+      const record = getAttributeRecord(element, attributeName);
+      const sourceText = current === record?.translated ? record.source : normalizeText(current);
+      return !element.hasAttribute(attributeName) ||
+        Boolean(element.closest(userContentSelector)) ||
+        !findScopedRule(element, sourceText, attributeName, true);
+    }
+
     if (attributeName === "placeholder") {
       return (
         !element.matches("input[placeholder], textarea[placeholder]") ||
@@ -752,7 +795,9 @@
       }
 
       if (currentValue === previousRecord.translated) {
-        if (parent && isApprovedUiText(parent, previousRecord.source)) {
+        if (parent && (previousRecord.greeting
+          ? dashboardGreeting(parent, previousRecord.source) === previousRecord.translated.trim()
+          : isApprovedUiText(parent, previousRecord.source))) {
           connectedTranslatedNodes.add(node);
         } else {
           restoreTextNode(node);
@@ -767,24 +812,20 @@
 
     const sourceText = normalizeText(currentValue);
 
-    if (
-      !sourceText ||
-      !parent ||
-      !Object.prototype.hasOwnProperty.call(dictionary, sourceText)
-    ) {
+    if (!sourceText || !parent || shouldIgnoreTextNode(node)) {
       return;
     }
 
-    if (shouldIgnoreTextNode(node)) {
+    const greeting = dashboardGreeting(parent, sourceText);
+    if (!greeting && !Object.prototype.hasOwnProperty.call(dictionary, sourceText)) {
       return;
     }
-
-    const translatedText = getTranslatedText(sourceText);
+    const translatedText = greeting ?? getTranslatedText(sourceText, parent);
 
     if (
       !translatedText ||
       sourceText === translatedText ||
-      !isApprovedUiText(parent, sourceText)
+      (!greeting && !isApprovedUiText(parent, sourceText))
     ) {
       return;
     }
@@ -794,7 +835,8 @@
     translationRecords.set(node, {
       original: currentValue,
       translated: nextValue,
-      source: sourceText
+      source: sourceText,
+      greeting: Boolean(greeting)
     });
     connectedTranslatedNodes.add(node);
     node.nodeValue = nextValue;
@@ -858,7 +900,7 @@
 
     if (previousRecord) {
       if (currentValue === previousRecord.translated) {
-        if (isApprovedUiText(element, previousRecord.source)) {
+        if (isApprovedUiText(element, previousRecord.source, attributeName)) {
           connectedTranslatedAttributeElements.add(element);
         } else {
           restoreAttribute(element, attributeName);
@@ -879,12 +921,12 @@
       return;
     }
 
-    const translatedText = getTranslatedText(sourceText);
+    const translatedText = getTranslatedText(sourceText, element, attributeName);
 
     if (
       !translatedText ||
       translatedText === sourceText ||
-      !isApprovedUiText(element, sourceText)
+      !isApprovedUiText(element, sourceText, attributeName)
     ) {
       return;
     }
@@ -924,6 +966,11 @@
       {
         acceptNode(element) {
           if (element.matches(ignoredAttributeSelector)) {
+            // Some editors draw an empty prompt from an attribute on the
+            // outer host. Inspect that host only; never descend into it.
+            if (element.matches("[data-placeholder], [aria-placeholder], [role='textbox'][aria-label]")) {
+              translateElementAttributes(element);
+            }
             return NodeFilter.FILTER_REJECT;
           }
 
@@ -1501,7 +1548,9 @@
       "aria-live",
       "aria-label",
       "title",
-      "placeholder"
+      "placeholder",
+      "data-placeholder",
+      "aria-placeholder"
     ]
   });
 
